@@ -1,24 +1,33 @@
 // Register
 import React, { useEffect, useState } from "react";
-import { createUserWithEmailAndPassword, getAuth, sendEmailVerification, signOut, updateProfile } from 'firebase/auth'
+import { createUserWithEmailAndPassword, deleteUser, getAuth, sendEmailVerification, signOut, updateProfile } from 'firebase/auth'
 import { Link } from "react-router-dom";
 
 
 
 
+const auth = getAuth()
 export default function SignUp() {
-  const auth = getAuth()
-  function signOutOnClick() {
-    signOut(auth)
-      .then(() => {
-        window.location.href = "/log-in";
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  }
   const authUser = auth.currentUser;
-  
+  function signOutOnClick() {
+    if(authUser && authUser.reloadUserInfo && authUser.reloadUserInfo.initialEmail){
+      console.log('you had a initial email', auth.currentUser)
+    } else{
+      console.log('you hadn\'t a initial email')
+      // delete user
+      if(auth){
+        deleteUser(authUser)
+        window.location.reload()
+      } 
+    }
+    // signOut(auth)
+    // .then(() => {
+    //     // window.location.href = "/log-in";
+    //   })
+    //   .catch((error) => {
+    //     console.log(error);
+    //   });
+  }
 
 
   const fetchSendLink = async ()=>{
@@ -63,7 +72,7 @@ export default function SignUp() {
     }
     }
     return <h1 className=" text-3xl">You already registered</h1>;
-  } else if(!authUser){
+  } 
   const [name, setName] = useState('') 
   const [nameTitle, setNameTitle] = useState(null) 
   const [email, setEmail] = useState('') 
@@ -87,8 +96,8 @@ export default function SignUp() {
 
 
     // Confirm Password
-    if(password.length < 5){
-      setPasswordTitle('The minimum character length for a password is 5')
+    if(password.length < 6){
+      setPasswordTitle('The minimum character length for a password is 6')
       return null
     } else {
       setPasswordTitle(null)
@@ -111,8 +120,6 @@ export default function SignUp() {
       .then(() => {
         updateProfile(auth.currentUser, {
           displayName: name
-        }).then(() => {
-          // ...
         }).catch((error) => {
           console.log(error)
         });
@@ -120,8 +127,10 @@ export default function SignUp() {
       .catch((error) => {
         console.log(error);
         // Confirm Email
+        console.log('Произошла ошибка:', error.message);
         if (error.code === 'auth/email-already-in-use') {
           setEmailTitle('This email is already in use')
+          console.log(email)
         } else if(error.code === 'auth/invalid-email'){
           setEmailTitle('Email is invalid')
         } else {
@@ -131,7 +140,8 @@ export default function SignUp() {
     };
 
   
-  return (
+    if(!authUser){
+      return (
     <div className="signup mt-5">
       <div className="card">
         <h2 className=" text-2xl">Create Account</h2>
@@ -203,8 +213,8 @@ export default function SignUp() {
         Already have account? Please <Link to="/log-in">LogIn</Link>
       </div>
     </div>
-  );
-  } else {
-    return <h1>If you want fix this, you can contact <Link to={'https://t.me/Bilol_8080'}>technical support</Link></h1>
-  }
+    )
+    } else {
+      return <h1>If you want fix this, you can contact <Link to={'https://t.me/Bilol_8080'}>technical support</Link></h1>
+    }
 }

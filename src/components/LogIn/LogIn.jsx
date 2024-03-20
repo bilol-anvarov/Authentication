@@ -35,6 +35,8 @@ export default function LogIn() {
           setTitle('Invalid email address or password')
         } else if(error.code === 'auth/too-many-requests'){
           setTitle('There are too many incorrect requests, please try again later')
+        } else if(error.code === 'auth/user-not-found'){
+          setTitle('User not found')
         } else{
           setTitle(null)
         }

@@ -1,4 +1,4 @@
-import { getAuth, getIdToken, onAuthStateChanged, sendEmailVerification, updateCurrentUser, updateEmail, updateProfile, verifyBeforeUpdateEmail } from "firebase/auth";
+import { EmailAuthProvider, getAuth, getIdToken, onAuthStateChanged, reauthenticateWithCredential, sendEmailVerification, signInWithEmailAndPassword, updateCurrentUser, updateEmail, updateProfile, verifyBeforeUpdateEmail } from "firebase/auth";
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { auth } from "../farebase";
@@ -20,6 +20,7 @@ const PopupLayout = ({ name, type }) => {
   const [valueSetName, setName] = useState('') 
   const [secondName, setSecondName] = useState('') 
   const [title, setTitle] = useState(null)
+  console.log(auth)
   function  send(e){
     e.preventDefault()
 
@@ -62,83 +63,49 @@ const PopupLayout = ({ name, type }) => {
       }
     }
     if(name == 'email'){
-      const fetchUserData = async () => {
+    
+
+
+
+     
+      
+      // Example usage:
+      const currentUser = auth.currentUser;
+
+
+      const reauthenticate = async () => {
         try {
-          const user = auth.currentUser;
-          if (user) {
-            // Get the Auth token
-            console.log(auth.currentUser)
-            // verifyBeforeUpdateEmail(user, valueSetName)
-            
-            // onAuthStateChanged(auth, (user) => {
-            //   if (user) {
-            //     // User is signed in, see docs for a list of available properties
-            //     // https://firebase.google.com/docs/reference/js/auth.user
-            //     const uid = user.uid;
-            //     console.log(uid)
-            
-
-            //     // ...
-            //   } else {
-            //     // User is signed out
-            //     // ...
-            //   }
-            // });
-            // if(user.emailVerified){
-            // updateEmail(user, valueSetName)
-            // .then(()=>{
-            //   console.log(`new email is ${valueSetName}`)
-            // })
-            // .catch((error)=>{
-            //   // closeSpan.click()
-            //   console.log(error)
-            // })
-            // }
-
-
-            
-            // Make the API request with the Auth token in the headers
-            // Your fetch code here
-          }
+          // Provide the user's current email and password
+          const email = currentUser.email;
+          const password = secondName; // Replace with the user's password
+      
+          // Create a credential with the user's email and password
+          const credential = EmailAuthProvider.credential(email, password);
+      
+          // Re-authenticate the user with the credential
+          await reauthenticateWithCredential(currentUser, credential);
+      
+          // Once re-authenticated, update the email address
+          await updateEmail(currentUser, valueSetName);
+          window.location.href = '/sign-up'
+          window.location.reload
+          console.log('Email updated successfully to', valueSetName);
         } catch (error) {
-          console.error('Error fetching data:', error);
+          // Handle errors
+          console.error('Error updating email:', error);
+          if (error.code === 'auth/email-already-in-use') {
+            setTitle('This email is already in use')
+          } else if(error.code === 'auth/invalid-email'){
+            setTitle('Email is invalid')
+          } else {
+            console.log('Произошла ошибка:', error.message);
+          }
         }
       };
-      // fetchUserData()
-      // sendEmailVerification(valuese)
-      // .then(() => {
-      //   // Verification email sent, instruct user to check their inbox
-      //   console.log('Verification email sent to', valueSetName);
-      //   // Wait for user to verify email
+      
+      // Call the reauthenticate function
+      reauthenticate();
 
-      //   // Once email is verified, update email address
-      //   // Update email address only after verification is complete
-      //   updateEmail(auth.currentUser, valueSetName)
-      //     .then(() => {
-      //       // Email updated successfully
-      //       console.log('Email updated successfully to', valueSetName);
-      //       // Proceed with other actions if needed
-      //     })
-      //     .catch((error) => {
-      //       // Handle errors
-      //       console.error('Error updating email:', error);
-      //     });
-      // })
-      // .catch((error) => {
-      //   // Handle errors
-      //   console.error('Error sending verification email:', error);
-      // });
-
-
-      UPDA
-
-      // updateEmail(auth.currentUser, valueSetName)
-      //   .then(()=>{
-      //     console.log(`new email is ${valueSetName}`)
-      //     console.log(auth.currentUser)
-      //     closeSpan.click()
-      //   })
-      //   .catch((error)=>{console.log(error)})
     }
   }
   // change a name
@@ -176,6 +143,19 @@ const PopupLayout = ({ name, type }) => {
             className="py-1 px-2 w-full mt-3 rounded-lg"
             placeholder={name}
           />
+          {/*  if email */}
+          {name == "email" && (
+            <>
+              <h2 className="mt-4">Please enter a password</h2>
+              <input
+                value={secondName}
+                onChange={(e)=>{setSecondName(e.target.value)}}
+                type='password'
+                className=" py-1 px-2 w-full mt-3 rounded-lg"
+                placeholder={'password'}
+              />
+            </>
+          )}
           <div className="title mt-5">
             {title && title}
           </div>
