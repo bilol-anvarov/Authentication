@@ -33,6 +33,10 @@ function App() {
             path="profil/:popup/:name/:type"
             element={<Profil authUser={authUser}/>}
           />
+          <Route
+            path="sign-up/:popup/:name/:type"
+            element={<SignUp />}
+          />
           <Route path="*" element={<Page404 />} />
         </Routes>
       </Router>

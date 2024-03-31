@@ -37,6 +37,8 @@ export default function LogIn() {
           setTitle('There are too many incorrect requests, please try again later')
         } else if(error.code === 'auth/user-not-found'){
           setTitle('User not found')
+        } else  if (error.code === 'auth/wrong-password') {
+          setTitle('Wrong password')
         } else{
           setTitle(null)
         }

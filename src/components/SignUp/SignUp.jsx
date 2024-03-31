@@ -1,9 +1,8 @@
 // Register
 import React, { useEffect, useState } from "react";
-import { createUserWithEmailAndPassword, deleteUser, getAuth, sendEmailVerification, signOut, updateProfile } from 'firebase/auth'
+import { EmailAuthProvider, createUserWithEmailAndPassword, deleteUser, getAuth, reauthenticateWithCredential, sendEmailVerification, signOut, updateEmail, updateProfile } from 'firebase/auth'
 import { Link } from "react-router-dom";
-
-
+import Popup from "../Popup";
 
 
 const auth = getAuth()
@@ -11,7 +10,9 @@ export default function SignUp() {
   const authUser = auth.currentUser;
   function signOutOnClick() {
     if(authUser && authUser.reloadUserInfo && authUser.reloadUserInfo.initialEmail){
-      console.log('you had a initial email', auth.currentUser)
+      console.log('you had a initial email', authUser)
+      // updEmailToOld(auth , authUser.reloadUserInfo.initialEmail)
+      window.location.href = 'sign-up/popup/password/confirm'
     } else{
       console.log('you hadn\'t a initial email')
       // delete user
@@ -20,13 +21,6 @@ export default function SignUp() {
         window.location.reload()
       } 
     }
-    // signOut(auth)
-    // .then(() => {
-    //     // window.location.href = "/log-in";
-    //   })
-    //   .catch((error) => {
-    //     console.log(error);
-    //   });
   }
 
 
@@ -44,32 +38,42 @@ export default function SignUp() {
     if(!authUser.emailVerified){
       // fetchSendLink()
       const lastSentTime = localStorage.getItem('timeSent')
-      if (!lastSentTime || (Date.now() - new Date(lastSentTime)) > 2 * 60 * 1000){
-        console.log('message was sent')
+      if(!lastSentTime || (Date.now() - new Date(lastSentTime)) > 2 * 60 * 1000) {
         fetchSendLink()
+      }
+      if (!lastSentTime || (Date.now() - new Date(lastSentTime)) > 2 * 60 * 1000){
         return (
         <>
+        <Popup />
         <h1 className=" text-3xl">Please check your email. We have sent you a link for verify email </h1>
-        <p className="my-3">The link was sent to {authUser.email}</p>
+        <p className="my-3">The link was sent to {authUser.email}, reload the page after confirmation</p>
         <Link to={'https://mail.google.com/mail/'} target="_blank" className="w-full"><button className="w-full uppercase">Open mail</button></Link>
-        <h2 className=" my-3 text-3xl">Or you can start all over again</h2>
-        <button onClick={signOutOnClick} className="w-full uppercase">start over</button>
+        
+          <h2 className="my-3 text-3xl">Or you can log in to your old mail</h2>
+          {/* function for popup */}
+          <button onClick={signOutOnClick} className="w-full uppercase">log in to old mail</button>
+          <h3 className=" my-3 text-3xl">And you can delete account and start all again</h3>
+          <button onClick={()=> {deleteUser(authUser)}} className="w-full uppercase">start over</button> 
         </>
       )
-    } else{
-      const lastSentTime = localStorage.getItem('timeSent')
-      console.log(lastSentTime)
-      return (
-        <>
-        <h1 className=" text-3xl">Please check your email. We have sent you a link for verify email </h1>
-        <p className="my-3">The link was sent to {authUser.email}</p>
-        <p className="my-3">We can only send you 1 message within 5 minutes. If you have not received the message, please check the email for correctness or you can send the link again later</p>
-        <Link to={'https://mail.google.com/mail/'} target="_blank" className="w-full"><button className="w-full uppercase">Open mail</button></Link>
-        <h2 className=" my-3 text-3xl">Or you can start all over again</h2>
-        <button onClick={signOutOnClick} className="w-full uppercase">start over</button>
-        </>
-      )
-    }
+      } else{
+        return (
+          <>
+          <Popup />
+          <h1 className=" text-3xl">Please check your email. We have sent you a link for verify email </h1>
+          <p className="my-3">The link was sent to {authUser.email}, reload the page after confirmation</p>
+          <p className="my-3">We can only send you 1 message within 5 minutes. If you have not received the message, please check the email for correctness or you can send the link again later</p>
+          <Link to={'https://mail.google.com/mail/'} target="_blank" className="w-full"><button className="w-full uppercase">Open mail</button></Link>
+          
+          <h2 className="my-3 text-3xl">Or you can log in to your old mail</h2>
+          {/* function for popup */}
+          <button onClick={signOutOnClick} className="w-full uppercase">log in to old mail</button>
+          <h3 className=" my-3 text-3xl">And you can delete account and start all again</h3>
+          <button onClick={()=> {deleteUser(authUser)}} className="w-full uppercase">start over</button> 
+
+          </>
+        )
+      }
     }
     return <h1 className=" text-3xl">You already registered</h1>;
   } 

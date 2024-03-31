@@ -5,10 +5,25 @@ import { auth } from "../../farebase";
 import { signOut } from "firebase/auth";
 import { Link } from "react-router-dom";
 import Popup from "../Popup";
+import styled from "styled-components";
 
-const FlexText = ({ children }) => {
-  return <p className="flex justify-between items-center">{children}</p>;
-};
+
+// the same sing
+
+// const FlexText = ({ children }) => {
+  //   return <p className="flex justify-between items-center">{children}</p>;
+  // };
+  
+
+// the same thing 
+
+// (library styled-components)
+const FlexText = styled.p`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`
+
 
 export default function Profil({ authUser }) {
   const [email, setEmail] = useState("");
@@ -78,7 +93,7 @@ export default function Profil({ authUser }) {
         </div>
       </div>
       Profil
-      <button onClick={signOutOnClick}>Exit</button>
+      <button className="ml-5" onClick={signOutOnClick}>Exit</button>
     </div>
   );
 }
